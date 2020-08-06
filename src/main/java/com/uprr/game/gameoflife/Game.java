@@ -1,5 +1,6 @@
 package com.uprr.game.gameoflife;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -83,7 +84,7 @@ public class Game {
 		return neighborCount == 3;
 	}
 	
-	public void tick() {
+	public synchronized void  tick() {
 		
 		Set<Cell> deadNeighborCells = new HashSet<Cell>();
 		Set<Cell> cellsToKill = new HashSet<Cell>();
