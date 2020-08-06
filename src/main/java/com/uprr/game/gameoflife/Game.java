@@ -1,6 +1,5 @@
 package com.uprr.game.gameoflife;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
