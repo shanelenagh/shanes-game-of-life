@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 
 import com.uprr.game.gameoflife.Cell;
 import com.uprr.game.gameoflife.Game;
-import com.uprr.game.gameoflife.ui.GameGridNavigator.Direction;
 import com.uprr.game.gameoflife.ui.GameGridNavigator.MoveType;
 
 /**
