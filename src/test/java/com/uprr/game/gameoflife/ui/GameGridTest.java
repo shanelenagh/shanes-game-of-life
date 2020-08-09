@@ -7,15 +7,16 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
-
+import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 import java.util.List;
-
 
 import org.junit.After;
 import org.junit.Before;
@@ -54,7 +55,8 @@ public class GameGridTest {
 	}
 	
 	private class GameGridSpy extends GameGrid {
-		public boolean painted = false;
+        private static final long serialVersionUID = 112438127349817234L;
+        public boolean painted = false;
 		public List<Cell> clearedCells = new ArrayList<Cell>();
 		public List<Cell> filledCells = new ArrayList<Cell>();
 		
@@ -194,51 +196,52 @@ public class GameGridTest {
 	@Test
 	public void drawGridLines() throws AWTException, InterruptedException {
 		
+	    final int BLACK_COLOR_MASK = 0xff000000, WHITE_COLOR_MASK = 0xffffffff;
 		setUpUI();
 		
 		Robot robot = new Robot();
 		
 		while(!gameGrid.painted)
-			Thread.sleep(300);
+			Thread.sleep(5);
+		Thread.sleep(10);
 		
-		int gridX, gridY, actualX, actualY;
 		Point gridLocation = gameGrid.getLocationOnScreen();
+		BufferedImage buffImage = robot.createScreenCapture(new Rectangle(gridLocation.x, gridLocation.y, 
+		        gameGrid.getWidth(), gameGrid.getHeight()));
+		final int[] pixels =((DataBufferInt) buffImage.getRaster().getDataBuffer()).getData();
 		
+		int gridX, gridY;
 		// verify vertical lines
 		gridY = GRID_HEIGHT / 2;
 		for (gridX = 0; gridX < gameGrid.getWidth(); gridX++) {
-			actualX = gridLocation.x+gridX;
-			actualY = gridLocation.y+gridY;
-			Color pixelColor = robot.getPixelColor(actualX, actualY);
 			if (gridX % CELL_SIZE == 0)
 				assertEquals(
-					String.format("Vert cell boundary color at x=%d, y=%d", actualX, actualY),
-					Color.BLACK,
-					pixelColor);
+					String.format("Vert cell boundary color at x=%d, y=%d is black", gridX, gridY),
+					BLACK_COLOR_MASK,
+					pixels[gridY*gameGrid.getWidth()+gridX] & BLACK_COLOR_MASK);
 			else
 				assertEquals(
-					String.format("Vert cell interior color at x=%d, y=%d", actualX, actualY),
-					Color.WHITE,
-					pixelColor);
+					String.format("Vert cell interior color at x=%d, y=%d is white", gridX, gridY),
+					WHITE_COLOR_MASK,
+					pixels[gridY*gameGrid.getWidth()+gridX] & WHITE_COLOR_MASK);
 		}
 	
 		// verify horizontal lines
 		gridX = GRID_WIDTH / 2;
 		for (gridY = 0; gridY < gameGrid.getHeight(); gridY++) {
-			actualX = gridLocation.x+gridX;
-			actualY = gridLocation.y+gridY;
-			Color pixelColor = robot.getPixelColor(actualX, actualY);
 			if (gridY % CELL_SIZE == 0)
-				assertEquals(
-					String.format("Horiz cell boundary color at x=%d, y=%d", actualX, actualY),
-					Color.BLACK,
-					pixelColor);
+                assertEquals(
+                        String.format("Horizontal cell boundary color at x=%d, y=%d is black",
+                                gridX, gridY),
+                        BLACK_COLOR_MASK,
+                        pixels[gridY*gameGrid.getWidth()+gridX] & BLACK_COLOR_MASK);
 			else
 				assertEquals(
-					String.format("Horiz cell interior color at x=%d, y=%d", actualX, actualY),
-					Color.WHITE,
-					pixelColor);
-		}		
+					String.format("Horiz cell interior color at x=%d, y=%d",
+					        gridX, gridY),
+                    WHITE_COLOR_MASK,
+                    pixels[gridY*gameGrid.getWidth()+gridX] & WHITE_COLOR_MASK);
+		}	
 	}
 
 	@Test
