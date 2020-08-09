@@ -1,6 +1,8 @@
 package com.uprr.game.gameoflife;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Game of Life core game object
@@ -10,18 +12,18 @@ import java.util.Set;
  */
 public class Game {
 
-	private Set<Cell> liveCells = new HashSet<Cell>();
-	private Set<Cell> killedCells, bornCells;
+	private List<Cell> liveCells = new CopyOnWriteArrayList<Cell>(new HashSet<Cell>());
+	private List<Cell> killedCells, bornCells;
 	
-	public Set<Cell> getLiveCells() {
+	public List<Cell> getLiveCells() {
 		return liveCells;
 	}
 	
-	public Set<Cell> getBornCells() {
+	public List<Cell> getBornCells() {
 		return bornCells;
 	}
 
-	public Set<Cell> getKilledCells() {
+	public List<Cell> getKilledCells() {
 		return killedCells;
 	}	
 	
@@ -86,8 +88,8 @@ public class Game {
 	public synchronized void  tick() {
 		
 		Set<Cell> deadNeighborCells = new HashSet<Cell>();
-		Set<Cell> cellsToKill = new HashSet<Cell>();
-		Set<Cell> cellsToBirth = new HashSet<Cell>();
+		List<Cell> cellsToKill = new CopyOnWriteArrayList<Cell>(new HashSet<Cell>());
+		List<Cell> cellsToBirth = new CopyOnWriteArrayList<Cell>(new HashSet<Cell>());
 		
 		// see if any live cells no longer have support to continue living
 		for (Cell liveCell : liveCells) {

@@ -1,5 +1,6 @@
 package com.uprr.game.gameoflife;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -41,7 +42,7 @@ public class GameTest {
 	@Test
 	public void bringCellToLife_CellIsNowInSet() {
 		Cell liveCell = new Cell(23, 12);
-		Set<Cell> liveCellSet = game.getLiveCells(); // exploit Java pass-by-ref
+		List<Cell> liveCellSet = game.getLiveCells(); // exploit Java pass-by-ref
 		assertFalse("Cell not there yet (sanity)", liveCellSet.contains(liveCell));
 		game.bringCellToLife(liveCell);
 		assertTrue("Cell is set now", liveCellSet.contains(liveCell));
@@ -50,7 +51,7 @@ public class GameTest {
 	@Test
 	public void killCell_CellNoLongerInSet() {
 		Cell liveCell = new Cell(23, 12);
-		Set<Cell> liveCellSet = game.getLiveCells(); // exploit Java pass-by-ref
+		List<Cell> liveCellSet = game.getLiveCells(); // exploit Java pass-by-ref
 		liveCellSet.add(liveCell);
 		game.killCell(liveCell);
 		assertFalse("Cell is dead now", liveCellSet.contains(liveCell));
@@ -240,8 +241,8 @@ public class GameTest {
 		game.bringCellToLife(farRightLoneCell);		
 		game.tick();
 		
-		Set<Cell> bornCells = game.getBornCells();
-		Set<Cell> killedCells = game.getKilledCells();
+		List<Cell> bornCells = game.getBornCells();
+		List<Cell> killedCells = game.getKilledCells();
 		
 		assertEquals("Born cell count", 1, bornCells.size());
 		assertTrue("Born cells contains one cell in corner", bornCells.contains(newLowerRightCornerPoint));
