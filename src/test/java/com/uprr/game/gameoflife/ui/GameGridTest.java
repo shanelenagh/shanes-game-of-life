@@ -105,7 +105,7 @@ public class GameGridTest {
 		
 		frame = new Frame("Game Grid Unit Test Frame");
 		frame.add(gameGrid, BorderLayout.CENTER);
-		frame.pack();
+		//
 		
 		frame.addWindowListener(new WindowListener() {
 
@@ -121,7 +121,9 @@ public class GameGridTest {
 			public void windowIconified(WindowEvent e) { }
 		});		
 
-		frame.setVisible(true);	
+		frame.setVisible(true);
+		frame.setSize(GRID_WIDTH+2, GRID_HEIGHT+2);
+		frame.pack();
 		frame.requestFocus();
 		
 		
@@ -196,19 +198,11 @@ public class GameGridTest {
 	@Test
 	public void drawGridLines() throws AWTException, InterruptedException {
 		
-	    final int BLACK_COLOR_MASK = 0xff000000, WHITE_COLOR_MASK = 0xffffffff;
-		setUpUI();
+	    final int BLACK_ARGB_COLOR = 0xff000000, WHITE_ARGB_COLOR = 0xffffffff;
 		
-		Robot robot = new Robot();
-		
-		while(!gameGrid.painted)
-			Thread.sleep(5);
-		Thread.sleep(10);
-		
-		Point gridLocation = gameGrid.getLocationOnScreen();
-		BufferedImage buffImage = robot.createScreenCapture(new Rectangle(gridLocation.x, gridLocation.y, 
-		        gameGrid.getWidth(), gameGrid.getHeight()));
-		final int[] pixels =((DataBufferInt) buffImage.getRaster().getDataBuffer()).getData();
+	    setUpUI();
+
+		final int[] pixels = getPixels();
 		
 		int gridX, gridY;
 		// verify vertical lines
@@ -217,13 +211,13 @@ public class GameGridTest {
 			if (gridX % CELL_SIZE == 0)
 				assertEquals(
 					String.format("Vert cell boundary color at x=%d, y=%d is black", gridX, gridY),
-					BLACK_COLOR_MASK,
-					pixels[gridY*gameGrid.getWidth()+gridX] & BLACK_COLOR_MASK);
+					BLACK_ARGB_COLOR,
+					pixels[gridY*gameGrid.getWidth()+gridX]);
 			else
 				assertEquals(
 					String.format("Vert cell interior color at x=%d, y=%d is white", gridX, gridY),
-					WHITE_COLOR_MASK,
-					pixels[gridY*gameGrid.getWidth()+gridX] & WHITE_COLOR_MASK);
+					WHITE_ARGB_COLOR,
+					pixels[gridY*gameGrid.getWidth()+gridX]);
 		}
 	
 		// verify horizontal lines
@@ -233,15 +227,30 @@ public class GameGridTest {
                 assertEquals(
                         String.format("Horizontal cell boundary color at x=%d, y=%d is black",
                                 gridX, gridY),
-                        BLACK_COLOR_MASK,
-                        pixels[gridY*gameGrid.getWidth()+gridX] & BLACK_COLOR_MASK);
+                        BLACK_ARGB_COLOR,
+                        pixels[gridY*gameGrid.getWidth()+gridX]);
 			else
 				assertEquals(
 					String.format("Horiz cell interior color at x=%d, y=%d",
 					        gridX, gridY),
-                    WHITE_COLOR_MASK,
-                    pixels[gridY*gameGrid.getWidth()+gridX] & WHITE_COLOR_MASK);
+					WHITE_ARGB_COLOR,
+                    pixels[gridY*gameGrid.getWidth()+gridX]);
 		}	
+		
+	}
+
+	private int[] getPixels() throws InterruptedException {
+		
+		while(!gameGrid.painted)
+			Thread.sleep(5);
+		Thread.sleep(10);
+		
+		BufferedImage bi = new BufferedImage(gameGrid.getWidth(), gameGrid.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		Graphics g = bi.getGraphics();
+		gameGrid.printAll(g);
+		g.dispose();
+		final int[] pixels =((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
+		return pixels;
 	}
 
 	@Test
@@ -251,26 +260,32 @@ public class GameGridTest {
 		
 		setUpUI();
 		
-		while(!gameGrid.painted)
-			Thread.sleep(300);			
+		int[] pixels = getPixels();		
 		
-		Point gridLocation = gameGrid.getLocationOnScreen();
-		int cellX = gridLocation.x + FILLED_CELL_X*gameGrid.cellSize + 1;
-		int cellY = gridLocation.y + FILLED_CELL_Y*gameGrid.cellSize + 1;
+		//Point gridLocation = gameGrid.getLocationOnScreen();
+		int cellX = /* gridLocation.x +*/ FILLED_CELL_X*gameGrid.cellSize + gameGrid.cellSize/2;
+		int cellY = /* gridLocation.y +*/ FILLED_CELL_Y*gameGrid.cellSize + gameGrid.cellSize/2;
 		
 		Robot robot = new Robot();
 		
 		// sanity
-		assertEquals("Unfilled cell color (sanity)", Color.WHITE, robot.getPixelColor(cellX, cellY));
+		final int WHITE_ARGB_COLOR = 0xffffffff, BLACK_ARGB_COLOR = 0xff000000;
+		int testPixelIndex = cellY*gameGrid.getWidth()+cellX;
+		
+		assertEquals("Unfilled cell color (sanity) at x,y = "+cellX+", "+cellY, WHITE_ARGB_COLOR, pixels[testPixelIndex]);
 		
 		Cell liveCell = new Cell(FILLED_CELL_X, FILLED_CELL_Y);
 		gameSpy.bringCellToLife(liveCell);
 		gameGrid.fillCell(liveCell);
+		gameGrid.repaint();
 		robot.waitForIdle();
-		Thread.sleep(20);
+		
+		pixels = getPixels();
 
-		assertEquals("Filled cell color", Color.BLACK, robot.getPixelColor(cellX, cellY));
+		assertEquals("Filled cell color at x,y = "+cellX+", "+cellY+" and index"+testPixelIndex, BLACK_ARGB_COLOR, pixels[testPixelIndex]);
 	}	
+	
+	
 
 	@Test
 	public void clearCell_clearedCellIsWhite() throws Exception {

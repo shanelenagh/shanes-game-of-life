@@ -7,10 +7,13 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -142,31 +145,39 @@ public class GameGridNavigatorTest implements GameGridNavigationListener {
 	
 		setUpUI();		
 		
-		Robot robot = new Robot();	
+		Direction buttonDir = Direction.NORTH_WEST;
+		MoveType buttonMoveType = MoveType.PAGE;
 		
-		Direction buttonDir;
-		MoveType buttonMoveType;
+		final int WHITE_ARGB_COLOR = 0xffffffff;
 		
-		buttonDir = Direction.NORTH_WEST;
-		buttonMoveType = MoveType.PAGE;
-		
-		Point buttonBorderPoint = getButtonScreenPoint(buttonDir, buttonMoveType, 0, 0);
-		
-		Thread.sleep(500);	// Initial painting takes some time
-		assertEquals("Pre-hover border (sanity)", Color.WHITE, robot.getPixelColor(buttonBorderPoint.x, buttonBorderPoint.y));
+		int[] pixels = getPixels();
+		assertEquals("Pre-hover border (sanity)", WHITE_ARGB_COLOR, pixels[0]);
 		
 		hoverButton(buttonDir, buttonMoveType);
-		Thread.sleep(20);
 		
-		assertFalse("Hover border color changed",
-			Color.WHITE.equals(robot.getPixelColor(buttonBorderPoint.x, buttonBorderPoint.y)));
+		pixels = getPixels();
+		assertFalse("Hover border color changed", pixels[0] == WHITE_ARGB_COLOR);
 
 		leaveButton(buttonDir, buttonMoveType);
-		Thread.sleep(20);
 		
-		assertEquals("Exit hover border", Color.WHITE, robot.getPixelColor(buttonBorderPoint.x, buttonBorderPoint.y));
+		pixels = getPixels();
+		assertEquals("Exit hover border", WHITE_ARGB_COLOR, pixels[0]);
 		
 	}
+	
+	private int[] getPixels() throws InterruptedException {
+		
+		while(!navigator.painted)
+			Thread.sleep(5);
+		Thread.sleep(10);
+		
+		BufferedImage bi = new BufferedImage(navigator.getWidth(), navigator.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		Graphics g = bi.getGraphics();
+		navigator.printAll(g);
+		g.dispose();
+		final int[] pixels =((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
+		return pixels;
+	}	
 	
 	@Test
 	public void buttons_hoverSwitchButtonsAndPressFiresNewButtonEvent() throws Exception {
