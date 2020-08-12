@@ -1,14 +1,11 @@
 package com.uprr.game.gameoflife.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.Robot;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -36,6 +33,10 @@ public class GameGridNavigatorTest implements GameGridNavigationListener {
 	private List<GameGridNavigationEvent> eventStore; 
 	
 	private class GameGridNavigatorPaintSpy extends GameGridNavigator {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 2623306965817908828L;
 		public boolean painted = false;
 		public int repaintCtr = 0;
 		
@@ -169,14 +170,13 @@ public class GameGridNavigatorTest implements GameGridNavigationListener {
 		
 		while(!navigator.painted)
 			Thread.sleep(5);
-		Thread.sleep(10);
 		
 		BufferedImage bi = new BufferedImage(navigator.getWidth(), navigator.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics g = bi.getGraphics();
 		navigator.printAll(g);
 		g.dispose();
-		final int[] pixels =((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
-		return pixels;
+		
+		return ((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
 	}	
 	
 	@Test
@@ -380,15 +380,5 @@ public class GameGridNavigatorTest implements GameGridNavigationListener {
 		
 	}
 	
-	private Point getButtonScreenPoint(Direction dir, MoveType moveType, int x, int y) {
-		
-		Point relativePoint = getButtonPoint(dir, moveType, x, y);
-		
-		Point screenLocPoint = navigator.getLocationOnScreen();
-		
-		return new Point(screenLocPoint.x+relativePoint.x,
-			screenLocPoint.y+relativePoint.y);
-		
-	}	
 	
 }	

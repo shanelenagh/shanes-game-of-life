@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -243,14 +242,13 @@ public class GameGridTest {
 		
 		while(!gameGrid.painted)
 			Thread.sleep(5);
-		Thread.sleep(10);
 		
 		BufferedImage bi = new BufferedImage(gameGrid.getWidth(), gameGrid.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics g = bi.getGraphics();
 		gameGrid.printAll(g);
 		g.dispose();
-		final int[] pixels =((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
-		return pixels;
+		
+		return ((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
 	}
 
 	@Test
