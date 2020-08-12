@@ -14,7 +14,9 @@ import java.security.Permission;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 
 import static org.junit.Assert.*;
 
@@ -158,41 +160,18 @@ public class GameOfLifeTest {
 		assertTrue("Frame has GameOfLife in it", gameInFrame);
 		
 	}
-
-	@Test
-	public void main_closingFrameExits() {
-		
+	
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+    
+    @Test
+    public void main_closingFrameActuallyExits() {
 		GameOfLife.main(new String[] {});
 		Frame[] frames = Frame.getFrames();
-		
-		System.setSecurityManager(new SecurityManager() {
-			@Override 
-	        public void checkPermission(Permission perm) {  } 
-	        @Override 
-	        public void checkPermission(Permission perm, Object context) { } 
-
-			@Override 
-	        public void checkExit(int status)  
-	        { 
-	                super.checkExit(status); 
-	                throw new RuntimeException("Exit attempted"); 
-	        } 			
-		}); 
-
-		try {
-			WindowListener wl = frames[frames.length-1].getWindowListeners()[0];
-			wl.windowClosing(new WindowEvent(frames[0], WindowEvent.WINDOW_CLOSING));
-		} catch (RuntimeException e) {
-			System.setSecurityManager(null);
-			if (e.getMessage().equals("Exit attempted"))
-				return;
-			else
-				throw e;
-		}
-		System.setSecurityManager(null);
-		fail("Exit exception not thrown");
-		
-	}	
+		WindowListener wl = frames[frames.length-1].getWindowListeners()[0];
+		exit.expectSystemExitWithStatus(0);
+		wl.windowClosing(new WindowEvent(frames[0], WindowEvent.WINDOW_CLOSING));
+    }        
 	
 	@Test
 	public void resetButton_pushWhileRunningCausesStop() throws Exception {
